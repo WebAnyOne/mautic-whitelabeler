@@ -344,7 +344,7 @@ class Whitelabeler {
 	public function companyName($path, $version, $company_name, $footer_prefix, $footer)
 	{
 		// Version 5+
-		if ( substr($version, 0, 1) == 5 ) {
+		if ( substr($version, 0, 1) >= 5 ) {
 			$base_copyright = '/app/bundles/CoreBundle/Resources/views/Default/base.html.twig';
 			$head_title = '/app/bundles/CoreBundle/Resources/views/Default/head.html.twig';
 			$left_panel = '/app/bundles/CoreBundle/Resources/views/LeftPanel/index.html.twig';
@@ -610,7 +610,7 @@ class Whitelabeler {
 		$this->imageResize(400, $login_image, $media_images.'/login_logo.png');
 
 		// Version 5+
-		if ( substr($version, 0, 1) == 5 ) {
+		if ( substr($version, 0, 1) >= 5 ) {
 			$login_page = $path.'/app/bundles/UserBundle/Resources/views/Security/base.html.twig';
 		// Below V5
 		} elseif ( substr($version, 0, 1) < 5 ) {
