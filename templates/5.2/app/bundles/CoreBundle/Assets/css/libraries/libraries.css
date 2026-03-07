@@ -26497,5 +26497,4 @@ html body .fr-gatedvideo-overlay {
 :root[theme="light"] {
   --primary-60: {{primary}} !important;
   --primary-70: {{hover}} !important;
-  --logo-bg: {{logo_bg}} !important;
 }
