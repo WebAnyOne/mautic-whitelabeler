@@ -789,10 +789,18 @@ class Whitelabeler {
 		        array_push($versions, $file->getFilename());
 		    }
 		}
-		if (in_array(substr($version, 0, 3), $versions) || in_array($version, $versions)) {
+		if (in_array($version, $versions)) {
+			// Exact match (e.g. "5.0.0" → templates/5.0.0/)
 			return array(
 				'status' => 1,
 				'version' => $version,
+				'message' => 'Compatible version found ('.$version.')'
+			);
+		} elseif (in_array(substr($version, 0, 3), $versions)) {
+			// Prefix match (e.g. "6.0.0" → templates/6.0/, "5.2.1" → templates/5.2/)
+			return array(
+				'status' => 1,
+				'version' => substr($version, 0, 3),
 				'message' => 'Compatible version found ('.$version.')'
 			);
 		} else {
