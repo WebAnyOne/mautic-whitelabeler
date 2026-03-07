@@ -1,0 +1,13 @@
+{
+  "name": "mautic-whitelabeler-tests",
+  "version": "1.0.0",
+  "description": "Playwright tests for Mautic Whitelabeler",
+  "scripts": {
+    "test": "playwright test",
+    "test:6": "MAUTIC_VERSION=6.0.0 playwright test",
+    "test:7": "MAUTIC_VERSION=7.0.0 playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}
