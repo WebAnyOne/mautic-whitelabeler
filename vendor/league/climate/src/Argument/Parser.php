@@ -2,6 +2,8 @@
 
 namespace League\CLImate\Argument;
 
+use League\CLImate\Exceptions\InvalidArgumentException;
+
 class Parser
 {
     /**
@@ -19,6 +21,25 @@ class Parser
     protected $summary;
 
     protected $trailing;
+
+    protected $trailingArray;
+
+    /**
+     * List of unknown arguments and best argument suggestion.
+     *
+     * The key corresponds to the unknown argument and the value to the
+     * argument suggestion, if any.
+     *
+     * @var array
+     */
+    protected $unknowPrefixedArguments = [];
+
+    /**
+     * Minimum similarity percentage to detect similar arguments.
+     *
+     * @var float
+     */
+    protected $minimumSimilarityPercentage = 0.6;
 
     public function __construct()
     {
@@ -42,10 +63,12 @@ class Parser
     /**
      * Parse command line arguments into CLImate arguments.
      *
-     * @throws \Exception if required arguments aren't defined.
      * @param array $argv
+     *
+     * @return void
+     * @throws InvalidArgumentException if required arguments aren't defined.
      */
-    public function parse(array $argv = null)
+    public function parse(?array $argv = null)
     {
         $cliArguments = $this->arguments($argv);
 
@@ -55,6 +78,10 @@ class Parser
 
         $unParsedArguments = $this->prefixedArguments($cliArguments);
 
+        // Searches for unknown prefixed arguments and finds a suggestion
+        // within the list of valid arguments.
+        $this->unknowPrefixedArguments($unParsedArguments);
+
         $this->nonPrefixedArguments($unParsedArguments);
 
         // After parsing find out which arguments were required but not
@@ -62,7 +89,7 @@ class Parser
         $missingArguments = $this->filter->missing();
 
         if (count($missingArguments) > 0) {
-            throw new \Exception(
+            throw new InvalidArgumentException(
                 'The following arguments are required: '
                 . $this->summary->short($missingArguments) . '.'
             );
@@ -76,7 +103,7 @@ class Parser
      *
      * @return string
      */
-    public function command(array $argv = null)
+    public function command(?array $argv = null)
     {
         return $this->getCommandAndArguments($argv)['command'];
     }
@@ -88,7 +115,7 @@ class Parser
      *
      * @return array
      */
-    public function arguments(array $argv = null)
+    public function arguments(?array $argv = null)
     {
         return $this->getCommandAndArguments($argv)['arguments'];
     }
@@ -104,6 +131,16 @@ class Parser
     }
 
     /**
+     * Get the trailing arguments as an array
+     *
+     * @return array|null
+     */
+    public function trailingArray()
+    {
+        return $this->trailingArray;
+    }
+
+    /**
      * Remove the trailing arguments from the parser and set them aside
      *
      * @param array $arguments
@@ -114,6 +151,7 @@ class Parser
     {
         $trailing = array_splice($arguments, array_search('--', $arguments));
         array_shift($trailing);
+        $this->trailingArray = $trailing;
         $this->trailing = implode(' ', $trailing);
 
         return $arguments;
@@ -229,14 +267,28 @@ class Parser
 
             // If the value wasn't previously defined in "key=value"
             // format then define it from the next command argument.
-            $argument->setValue($argv[++$key]);
-            unset($argv[$key]);
-            return $argv;
+            $nextArgvValue = $argv[$key + 1];
+            if ($this->isValidArgumentValue($nextArgvValue)) {
+                $argument->setValue($nextArgvValue);
+                unset($argv[$key + 1]);
+                return $argv;
+            }
         }
 
         $argument->setValue($value);
 
         return $argv;
+    }
+
+    /**
+     * Check if the value is considered a valid input value.
+     *
+     * @param $argumentValue
+     * @return bool
+     */
+    protected function isValidArgumentValue($argumentValue)
+    {
+        return empty($this->findPrefixedArgument($argumentValue));
     }
 
     /**
@@ -263,7 +315,7 @@ class Parser
      * @param array $argv
      * @return array
      */
-    protected function getCommandAndArguments(array $argv = null)
+    protected function getCommandAndArguments(?array $argv = null)
     {
         // If no $argv is provided then use the global PHP defined $argv.
         if (is_null($argv)) {
@@ -274,5 +326,99 @@ class Parser
         $command   = array_shift($arguments);
 
         return compact('arguments', 'command');
+    }
+
+    /**
+     * Processes unknown prefixed arguments and sets suggestions if no matching
+     * prefix is found.
+     *
+     * @param array $unParsedArguments The array of unparsed arguments to
+     * process.
+     */
+    protected function unknowPrefixedArguments(array $unParsedArguments)
+    {
+        foreach ($unParsedArguments as $arg) {
+            $unknowArgumentName = $this->getUnknowArgumentName($arg);
+            if (!$this->findPrefixedArgument($unknowArgumentName)) {
+                if (is_null($unknowArgumentName)) {
+                    continue;
+                }
+                $suggestion = $this->findSuggestionsForUnknowPrefixedArguments(
+                    $unknowArgumentName,
+                    $this->filter->withPrefix()
+                );
+                $this->setSuggestion($unknowArgumentName, $suggestion);
+            }
+        }
+    }
+
+    /**
+     * Sets the suggestion for an unknown argument name.
+     *
+     * @param string $unknowArgName The name of the unknown argument.
+     * @param string $suggestion The suggestion for the unknown argument.
+     */
+    protected function setSuggestion(string $unknowArgName, string $suggestion)
+    {
+        $this->unknowPrefixedArguments[$unknowArgName] = $suggestion;
+    }
+
+    /**
+     * Extracts the unknown argument name from a given argument string.
+     *
+     * @param string $arg The argument string to process.
+     * @return string|null The extracted unknown argument name or null if not
+     * found.
+     */
+    protected function getUnknowArgumentName(string $arg)
+    {
+        if (preg_match('/^[-]{1,2}([^-]+?)(?:=|$)/', $arg, $matches)) {
+            return $matches[1];
+        }
+        return null;
+    }
+
+    /**
+     * Finds the most similar known argument for an unknown prefixed argument.
+     *
+     * @param string $argName The name of the unknown argument to find
+     * suggestions for.
+     * @param array $argList The list of known arguments to compare against.
+     * @return string The most similar known argument name.
+     */
+    protected function findSuggestionsForUnknowPrefixedArguments(
+        string $argName,
+        array $argList
+    ) {
+        $mostSimilar = '';
+        $greatestSimilarity = $this->minimumSimilarityPercentage * 100;
+        foreach ($argList as $arg) {
+            similar_text($argName, $arg->name(), $percent);
+            if ($percent > $greatestSimilarity) {
+                $greatestSimilarity = $percent;
+                $mostSimilar = $arg->name();
+            }
+        }
+        return $mostSimilar;
+    }
+
+    /**
+     * Returns the list of unknown prefixed arguments and their suggestions.
+     *
+     * @return array The list of unknown prefixed arguments and their suggestions.
+     */
+    public function getUnknowPrefixedArgumentsAndSuggestions()
+    {
+        return $this->unknowPrefixedArguments;
+    }
+
+    /**
+     * Sets the minimum similarity percentage for finding suggestions.
+     *
+     * @param float $percentage The minimum similarity percentage to set.
+     */
+    public function setMinimumSimilarityPercentage(float $percentage)
+    {
+        $this->minimumSimilarityPercentage = $percentage;
     }
 }

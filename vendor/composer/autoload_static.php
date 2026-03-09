@@ -7,36 +7,37 @@ namespace Composer\Autoload;
 class ComposerStaticInit895739c0a5bce21d72812872605ed25a
 {
     public static $prefixLengthsPsr4 = array (
-        'S' => 
+        'S' =>
         array (
             'Seld\\CliPrompt\\' => 15,
         ),
-        'P' => 
+        'P' =>
         array (
             'Psr\\Log\\' => 8,
         ),
-        'L' => 
+        'L' =>
         array (
             'League\\CLImate\\' => 15,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Seld\\CliPrompt\\' => 
+        'Seld\\CliPrompt\\' =>
         array (
             0 => __DIR__ . '/..' . '/seld/cli-prompt/src',
         ),
-        'Psr\\Log\\' => 
+        'Psr\\Log\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
         ),
-        'League\\CLImate\\' => 
+        'League\\CLImate\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/climate/src',
         ),
     );
 
     public static $classMap = array (
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'PHP_ICO' => __DIR__ . '/..' . '/chrisjean/php-ico/class-php-ico.php',
     );
 

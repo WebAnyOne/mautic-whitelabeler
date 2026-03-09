@@ -1,6 +1,137 @@
 Changelog
 =========
 
+Adds methods in Progress to return the current value and total value of the progress bar. (#206)
+--------
+
+## 3.10.0 - 2024-11-18
+
+### Added
+
+* [Progress] Added methods to get the current and total values. [#206](https://github.com/thephpleague/climate/pull/206)
+
+### Changed
+
+* [Support] Added support for PHP 8.4.
+
+--------
+
+## 3.9.0 - 2024-10-30
+
+### Added
+
+* [Arguments] Adds argument suggestion support for unknown arguments. [#204](https://github.com/thephpleague/climate/pull/204)
+* [Progress] Allow the precision to be specified. [#198](https://github.com/thephpleague/climate/pull/198)
+* [Password] Allow accept() and other additional features. [#171](https://github.com/thephpleague/climate/pull/171)
+
+### Fixed
+
+* Ensure usleep() always received an integer. [#197](https://github.com/thephpleague/climate/pull/197)
+* Prevent deprecation errors from type juggling. [#190](https://github.com/thephpleague/climate/pull/190)
+
+### Changed
+
+* [Support] Added support for PHP 8.2 & 8.3.
+
+--------
+
+## 3.8.2 - 2022-01-23
+
+### Fixed
+
+* Avoid passing null to strlen(). [#186](https://github.com/thephpleague/climate/issues/186)
+* [Support] Added compatibility for psr/log 2 & 3. [#191](https://github.com/thephpleague/climate/issues/191)
+
+--------
+
+## 3.8.1 - 2022-01-23
+
+### Fixed
+
+* [Linux] Avoid type issue when checking if \STDOUT is defined. [#185](https://github.com/thephpleague/climate/issues/185)
+
+--------
+
+## 3.8.0 - 2022-01-22
+
+### Changed
+
+* [Support] Added support for PHP 8.1.
+
+### Fixed
+
+* [Linux] Added a workaround for executed some parts of the code in a non-cli context. [#175](https://github.com/thephpleague/climate/pull/175)
+
+--------
+
+## 3.7.0 - 2021-01-10
+
+### Changed
+
+* [Support] Added support for PHP 8.0.
+* [Support] Dropped support for PHP 7.2.
+
+--------
+
+## 3.6.0 - 2020-10-04
+
+### Added
+
+* [Arguments] Add a method to access trailing args as array. [#158](https://github.com/thephpleague/climate/pull/158)
+
+### Fixed
+
+* [Table] Add support for newlines in table data. [#160](https://github.com/thephpleague/climate/pull/160)
+* [Checkbox] Don't try to add padding if the there's no spare space. [#161](https://github.com/thephpleague/climate/issues/161)
+
+### Changed
+
+* [Support] Dropped support for PHP 7.1.
+
+--------
+
+## 3.5.2 - 2019-12-01
+
+### Fixed
+
+* [Checkbox] Ensure we can output when the terminal width is unknown. [#156](https://github.com/thephpleague/climate/pull/156)
+
+--------
+
+## 3.5.1 - 2019-11-24
+
+### Fixed
+
+* [Art] Be stricter about matching filenames when looking for art. [#155](https://github.com/thephpleague/climate/issues/155)
+* [Support] Provide better support for Windows using GitHub actions.
+
+--------
+
+## 3.5.0 - 2019-02-10
+
+### Added
+
+* [Arguments] Multiple arguments (eg `cli -d foo=bar -d baz=qux`) available via `$climate->arguments->getArray("d")`. [#111](https://github.com/thephpleague/climate/pull/111)
+* [Arguments] A new method (`Argument::values()`) replaces the deprecated `valueArray()` method.
+* [Spinner] Add an indeterminate progress spinner.
+* [Exceptions] All exception now implement `League\CLImate\Exceptions\Exception`.
+* [Basic] Allow single lines to be cleared using `$climate->clearLine()`. [#145](https://github.com/thephpleague/climate/issues/145).
+
+### Fixed
+
+* [Arguments] Mixing arguments with/without option values. [#122](https://github.com/thephpleague/climate/issues/122).
+* [Output] Prevent `tput` output from being sent to the terminal.
+* [Confirm] Accept more reasonable options for yes/no. [#126](https://github.com/thephpleague/climate/issues/126).
+* [Radio] Allow ENTER to be used to choose an option. [#140](https://github.com/thephpleague/climate/issues/140).
+* [Output] Improve the checks for ANSI color checks. [#128](https://github.com/thephpleague/climate/issues/128) / [#129](https://github.com/thephpleague/climate/issues/129).
+* [Art] Only match filenames when looking for art. [#130](https://github.com/thephpleague/climate/issues/130)
+
+### Changed
+
+* [Support] Dropped support for PHP 5.6 and PHP 7.0
+
+--------
+
 ## 3.4.1 - 2018-04-29
 
 ### Fixed

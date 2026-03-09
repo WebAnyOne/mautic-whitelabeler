@@ -3,6 +3,7 @@
 namespace League\CLImate\Argument;
 
 use League\CLImate\CLImate;
+use League\CLImate\Exceptions\InvalidArgumentException;
 
 class Manager
 {
@@ -51,9 +52,11 @@ class Manager
     /**
      * Add an argument.
      *
-     * @throws \Exception if $argument isn't an array or Argument object.
      * @param Argument|string|array $argument
      * @param $options
+     *
+     * @return void
+     * @throws InvalidArgumentException if $argument isn't an array or Argument object.
      */
     public function add($argument, array $options = [])
     {
@@ -66,8 +69,8 @@ class Manager
             $argument = Argument::createFromArray($argument, $options);
         }
 
-        if (!($argument instanceof Argument)) {
-            throw new \Exception('Please provide an argument name or object.');
+        if (!$argument instanceof Argument) {
+            throw new InvalidArgumentException('Please provide an argument name or object.');
         }
 
         $this->arguments[$argument->name()] = $argument;
@@ -108,6 +111,17 @@ class Manager
     }
 
     /**
+     * Retrieve an argument's all values as an array.
+     *
+     * @param string $name
+     * @return string[]|int[]|float[]|bool[]
+     */
+    public function getArray($name)
+    {
+        return isset($this->arguments[$name]) ? $this->arguments[$name]->values() : [];
+    }
+
+    /**
      * Retrieve all arguments.
      *
      * @return Argument[]
@@ -128,7 +142,7 @@ class Manager
      *
      * @return bool
      */
-    public function defined($name, array $argv = null)
+    public function defined($name, ?array $argv = null)
     {
         // The argument isn't defined if it's not defined by the calling code.
         if (!$this->exists($name)) {
@@ -203,7 +217,7 @@ class Manager
      * @param CLImate $climate
      * @param array $argv
      */
-    public function usage(CLImate $climate, array $argv = null)
+    public function usage(CLImate $climate, ?array $argv = null)
     {
         $this->summary
                 ->setClimate($climate)
@@ -216,10 +230,9 @@ class Manager
     /**
      * Parse command line arguments into CLImate arguments.
      *
-     * @throws \Exception if required arguments aren't defined.
      * @param array $argv
      */
-    public function parse(array $argv = null)
+    public function parse(?array $argv = null)
     {
         $this->parser->setFilter($this->filter, $this->all());
 
@@ -234,5 +247,35 @@ class Manager
     public function trailing()
     {
         return $this->parser->trailing();
+    }
+
+    /**
+     * Get the trailing arguments as an array
+     *
+     * @return array|null
+     */
+    public function trailingArray()
+    {
+        return $this->parser->trailingArray();
+    }
+
+    /**
+     * Returns the list of unknown prefixed arguments and their suggestions.
+     *
+     * @return array The list of unknown prefixed arguments and their suggestions.
+     */
+    public function getUnknowPrefixedArgumentsAndSuggestions()
+    {
+        return $this->parser->getUnknowPrefixedArgumentsAndSuggestions();
+    }
+
+    /**
+     * Sets the minimum similarity percentage for finding suggestions.
+     *
+     * @param float $percentage The minimum similarity percentage to set.
+     */
+    public function setMinimumSimilarityPercentage(float $percentage)
+    {
+        $this->parser->setMinimumSimilarityPercentage($percentage);
     }
 }
