@@ -1,10 +1,10 @@
-RewriteEngine Off
+# Uncomment the line below when you're done whitelabeling so this folder is no longer publicly accessible!
 
-# Allow PHP files in this directory
-<FilesMatch "\.php$">
-    Order allow,deny
-    Allow from all
-</FilesMatch>
+# deny from all
+
+<IfModule mod_rewrite.c>
+RewriteEngine Off
+</IfModule>
 
 Options -Indexes
 DirectoryIndex index.php
