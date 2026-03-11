@@ -2,7 +2,16 @@
 
 namespace League\CLImate\TerminalObject\Basic;
 
+use League\CLImate\Exceptions\InvalidArgumentException;
 use League\CLImate\TerminalObject\Helper\StringLength;
+
+use function array_keys;
+use function count;
+use function get_object_vars;
+use function is_array;
+use function is_object;
+use function max;
+use function preg_split;
 
 class Table extends BasicTerminalObject
 {
@@ -58,9 +67,66 @@ class Table extends BasicTerminalObject
 
     public function __construct(array $data, $prefix = "")
     {
-        $this->data = $data;
+        $this->data = $this->getData($data);
         $this->prefix = $prefix;
     }
+
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    private function getData(array $input)
+    {
+        $output = [];
+
+        foreach ($input as $item) {
+            if (is_object($item)) {
+                $item = get_object_vars($item);
+            }
+
+            if (!is_array($item)) {
+                throw new InvalidArgumentException("Invalid table data, you must pass an array of arrays or objects");
+            }
+
+            $output[] = $item;
+        }
+
+        return $this->splitRows($output);
+    }
+
+    /**
+     * Split each row in $data into an array of arrays
+     * Where each value represents a line in a cell
+     *
+     * @param array $data
+     *
+     * @return array
+     */
+    private function splitRows($data)
+    {
+        foreach ($data as $row_key => $row) {
+            $height = 1;
+            $lines = [];
+            foreach ($row as $key => $column) {
+                $lines[$key] = preg_split('/(\r\n|\r|\n)/u', (string) $column);
+                $height = max($height, count($lines[$key]));
+            }
+            $keys = array_keys($row);
+            $new_rows = [];
+            for ($i = 0; $i < $height; $i++) {
+                $new_row = [];
+                foreach ($keys as $key) {
+                    $new_row[$key] = $lines[$key][$i] ?? '';
+                }
+                $new_rows[] = $new_row;
+            }
+            $data[$row_key] = $new_rows;
+        }
+        return $data;
+    }
+
 
     /**
      * Return the built rows
@@ -75,8 +141,10 @@ class Table extends BasicTerminalObject
 
         $this->buildHeaderRow();
 
-        foreach ($this->data as $key => $columns) {
-            $this->addLine($this->buildRow($columns));
+        foreach ($this->data as $row_columns) {
+            foreach ($row_columns as $columns) {
+                $this->addLine($this->buildRow($columns));
+            }
             $this->addLine($this->border);
         }
 
@@ -104,6 +172,7 @@ class Table extends BasicTerminalObject
     protected function getWidth()
     {
         $first_row = reset($this->data);
+        $first_row = reset($first_row);
         $first_row = $this->buildRow($first_row);
 
         return $this->lengthWithoutTags($first_row);
@@ -128,7 +197,7 @@ class Table extends BasicTerminalObject
         $header_row = $this->getHeaderRow();
         if ($header_row) {
             $this->addLine($this->buildRow($header_row));
-            $this->addLine((new Border)->char('=')->length($this->table_width)->result());
+            $this->addLine((new Border())->char('=')->length($this->table_width)->result());
         }
     }
 
@@ -173,10 +242,7 @@ class Table extends BasicTerminalObject
     protected function getHeaderRow()
     {
         $first_item = reset($this->data);
-
-        if (is_object($first_item)) {
-            $first_item = get_object_vars($first_item);
-        }
+        $first_item = reset($first_item);
 
         $keys       = array_keys($first_item);
         $first_key  = reset($keys);
@@ -197,17 +263,16 @@ class Table extends BasicTerminalObject
     protected function getColumnWidths()
     {
         $first_row = reset($this->data);
-
-        if (is_object($first_row)) {
-            $first_row = get_object_vars($first_row);
-        }
+        $first_row = reset($first_row);
 
         // Create an array with the columns as keys and values of zero
         $column_widths = $this->getDefaultColumnWidths($first_row);
 
-        foreach ($this->data as $columns) {
-            foreach ($columns as $key => $column) {
-                $column_widths[$key] = $this->getCellWidth($column_widths[$key], $column);
+        foreach ($this->data as $row_columns) {
+            foreach ($row_columns as $columns) {
+                foreach ($columns as $key => $column) {
+                    $column_widths[$key] = $this->getCellWidth($column_widths[$key], $column);
+                }
             }
         }
 

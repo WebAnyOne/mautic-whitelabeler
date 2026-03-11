@@ -8,7 +8,9 @@ use League\CLImate\Util\UtilImporter;
 
 class Checkbox
 {
-    use StringLength, ParserImporter, UtilImporter;
+    use StringLength;
+    use ParserImporter;
+    use UtilImporter;
 
     /**
      * The value of the checkbox
@@ -173,7 +175,10 @@ class Checkbox
      */
     protected function getPaddingString($line)
     {
-        $length = $this->util->system->width() - $this->lengthWithoutTags($line);
+        $length = $this->util->width() - $this->lengthWithoutTags($line);
+        if ($length < 1) {
+            return '';
+        }
 
         return str_repeat(' ', $length);
     }

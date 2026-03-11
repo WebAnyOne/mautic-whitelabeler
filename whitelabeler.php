@@ -277,24 +277,47 @@ class Whitelabeler {
 	) {
 		// Replace app.css contents with template and new colors
 		$app_css = $path.'/app/bundles/CoreBundle/Assets/css/app.css';
+		$color_placeholders = array('{{logo_bg}}', '{{primary}}', '{{hover}}', '{{sidebar_bg}}', '{{sidebar_submenu_bg}}',
+		                            '{{sidebar_link}}', '{{sidebar_link_hover}}', '{{active_icon}}', '{{divider_left}}', '{{sidebar_divider}}',
+		                            '{{submenu_bullet_bg}}', '{{submenu_bullet_shadow}}');
+		$color_values       = array($logo_bg, $primary, $hover, $sidebar_bg, $sidebar_submenu_bg, $sidebar_link, $sidebar_link_hover,
+		                            $active_icon, $divider_left, $sidebar_divider, $submenu_bullet_bg, $submenu_bullet_shadow);
 
 		if (file_exists($app_css)) {
 			$app_css_template = file_get_contents('templates/'.$version.'/app/bundles/CoreBundle/Assets/css/app.css');
-			$app_css_new = str_replace(
-				// Look for these template tags.
-				array('{{logo_bg}}', '{{primary}}', '{{hover}}', '{{sidebar_bg}}', '{{sidebar_submenu_bg}}',
-				      '{{sidebar_link}}', '{{sidebar_link_hover}}', '{{active_icon}}', '{{divider_left}}', '{{sidebar_divider}}',
-				      '{{submenu_bullet_bg}}', '{{submenu_bullet_shadow}}'
-				),
-				// Replace template tags with new colors.
-				array($logo_bg, $primary, $hover, $sidebar_bg, $sidebar_submenu_bg, $sidebar_link, $sidebar_link_hover,
-				      $active_icon, $divider_left, $sidebar_divider, $submenu_bullet_bg, $submenu_bullet_shadow
-				),
-				$app_css_template
-			);
-			$file = fopen($app_css, "w");
-			fwrite($file, $app_css_new);
-			fclose($file);
+
+			if (version_compare($version, '5.2', '>=')) {
+				// For Mautic 5.2+: append only the override block to the existing app.css
+				// rather than replacing the whole file, so Mautic updates aren't overwritten.
+				$sentinel = '/* Mautic Whitelabeler Custom Color Overrides */';
+				$override_start = strpos($app_css_template, $sentinel);
+				if ($override_start === false) {
+					return array(
+						'status' => 0,
+						'message' => 'Template app.css is missing the required override sentinel comment.'
+					);
+				}
+				$override_new = str_replace($color_placeholders, $color_values, substr($app_css_template, $override_start));
+
+				$existing = file_get_contents($app_css);
+				if ($existing === false) {
+					return array(
+						'status' => 0,
+						'message' => 'Unable to read app.css from your Mautic installation (check file permissions).'
+					);
+				}
+				// Strip any previously appended override block before re-appending.
+				$existing_pos = strpos($existing, $sentinel);
+				if ($existing_pos !== false) {
+					$existing = rtrim(substr($existing, 0, $existing_pos));
+				}
+				file_put_contents($app_css, $existing . "\n\n" . $override_new);
+			} else {
+				$app_css_new = str_replace($color_placeholders, $color_values, $app_css_template);
+				$file = fopen($app_css, "w");
+				fwrite($file, $app_css_new);
+				fclose($file);
+			}
 		} else {
 			return array(
 				'status' => 0,
@@ -307,16 +330,41 @@ class Whitelabeler {
 
 		if (file_exists($libraries_css)) {
 			$libraries_css_template = file_get_contents('templates/'.$version.'/app/bundles/CoreBundle/Assets/css/libraries/libraries.css');
-			$libraries_css_new = str_replace(
-				// Look for these template tags.
-				array('{{$logo_bg}}','{{primary}}','{{hover}}'),
-				// Replace template tags with new colors.
-				array($logo_bg, $primary, $hover),
-				$libraries_css_template
-			);
-			$file = fopen($libraries_css, "w");
-			fwrite($file, $libraries_css_new);
-			fclose($file);
+
+			if (version_compare($version, '5.2', '>=')) {
+				// For Mautic 5.2+: append only the override block to the existing libraries.css.
+				$sentinel = '/* Mautic Whitelabeler Custom Color Overrides */';
+				$override_start = strpos($libraries_css_template, $sentinel);
+				if ($override_start === false) {
+					return array(
+						'status' => 0,
+						'message' => 'Template libraries.css is missing the required override sentinel comment.'
+					);
+				}
+				$override_new = str_replace($color_placeholders, $color_values, substr($libraries_css_template, $override_start));
+
+				$existing = file_get_contents($libraries_css);
+				if ($existing === false) {
+					return array(
+						'status' => 0,
+						'message' => 'Unable to read libraries.css from your Mautic installation (check file permissions).'
+					);
+				}
+				$existing_pos = strpos($existing, $sentinel);
+				if ($existing_pos !== false) {
+					$existing = rtrim(substr($existing, 0, $existing_pos));
+				}
+				file_put_contents($libraries_css, $existing . "\n\n" . $override_new);
+			} else {
+				$libraries_css_new = str_replace(
+					array('{{logo_bg}}','{{primary}}','{{hover}}'),
+					array($logo_bg, $primary, $hover),
+					$libraries_css_template
+				);
+				$file = fopen($libraries_css, "w");
+				fwrite($file, $libraries_css_new);
+				fclose($file);
+			}
 
 			return array(
 			    'status' => 1,

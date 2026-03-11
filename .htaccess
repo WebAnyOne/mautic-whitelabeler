@@ -5,3 +5,18 @@
 <IfModule mod_rewrite.c>
 RewriteEngine Off
 </IfModule>
+
+# Allow web access only to the UI entry points.
+# cli.php, compare.php, and phpinfo.php are not web-accessible.
+<FilesMatch "^(index|view)\.php$">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Allow from all
+    </IfModule>
+</FilesMatch>
+
+Options -Indexes
+DirectoryIndex index.php
