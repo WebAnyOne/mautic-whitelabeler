@@ -291,10 +291,21 @@ class Whitelabeler {
 				// rather than replacing the whole file, so Mautic updates aren't overwritten.
 				$sentinel = '/* Mautic Whitelabeler Custom Color Overrides */';
 				$override_start = strpos($app_css_template, $sentinel);
-				$override_block = $override_start !== false ? substr($app_css_template, $override_start) : '';
-				$override_new = str_replace($color_placeholders, $color_values, $override_block);
+				if ($override_start === false) {
+					return array(
+						'status' => 0,
+						'message' => 'Template app.css is missing the required override sentinel comment.'
+					);
+				}
+				$override_new = str_replace($color_placeholders, $color_values, substr($app_css_template, $override_start));
 
 				$existing = file_get_contents($app_css);
+				if ($existing === false) {
+					return array(
+						'status' => 0,
+						'message' => 'Unable to read app.css from your Mautic installation (check file permissions).'
+					);
+				}
 				// Strip any previously appended override block before re-appending.
 				$existing_pos = strpos($existing, $sentinel);
 				if ($existing_pos !== false) {
@@ -324,10 +335,21 @@ class Whitelabeler {
 				// For Mautic 5.2+: append only the override block to the existing libraries.css.
 				$sentinel = '/* Mautic Whitelabeler Custom Color Overrides */';
 				$override_start = strpos($libraries_css_template, $sentinel);
-				$override_block = $override_start !== false ? substr($libraries_css_template, $override_start) : '';
-				$override_new = str_replace($color_placeholders, $color_values, $override_block);
+				if ($override_start === false) {
+					return array(
+						'status' => 0,
+						'message' => 'Template libraries.css is missing the required override sentinel comment.'
+					);
+				}
+				$override_new = str_replace($color_placeholders, $color_values, substr($libraries_css_template, $override_start));
 
 				$existing = file_get_contents($libraries_css);
+				if ($existing === false) {
+					return array(
+						'status' => 0,
+						'message' => 'Unable to read libraries.css from your Mautic installation (check file permissions).'
+					);
+				}
 				$existing_pos = strpos($existing, $sentinel);
 				if ($existing_pos !== false) {
 					$existing = rtrim(substr($existing, 0, $existing_pos));
