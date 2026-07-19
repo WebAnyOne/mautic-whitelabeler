@@ -433,7 +433,9 @@ class Whitelabeler {
 			if ( $footer_prefix != '' ) {
     			$footer_prefix_base = '. ' . $footer_prefix;
 			} else {
-    			$footer_prefix_base = $footer;
+    			// No prefix: leave empty. (Previously fell back to $footer, which
+    			// duplicated the footer text since {{footer}} is rendered separately.)
+    			$footer_prefix_base = '';
 			}
 			if ( $footer != '' ) {
     			$footer_base = '| '.$footer;
