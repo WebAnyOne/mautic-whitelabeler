@@ -1095,6 +1095,12 @@ class Whitelabeler {
 	        $errors[] = 'Invalid hex value provided for the active icon color.';
 	    }
 
+	    // Verify that a valid numeric value is provided for divider_left.
+	    // This is a pixel offset for the sidebar nav-group divider (left: {{divider_left}}px), not a color.
+	    if ( !is_numeric($config_vals['divider_left']) ) {
+	        $errors[] = 'Invalid divider_left value provided (expects a number of pixels, e.g. 15).';
+	    }
+
 	    // Verify that a valid hex value is provided for sidebar_divider
 	    if ( !preg_match('/#([a-fA-F0-9]{3}){1,2}\b/', $config_vals['sidebar_divider'] ) ) {
 	        $errors[] = 'Invalid hex value provided for the sidebar divider color.';
