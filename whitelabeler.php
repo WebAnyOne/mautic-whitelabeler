@@ -275,8 +275,15 @@ class Whitelabeler {
 		$submenu_bullet_bg,
 		$submenu_bullet_shadow
 	) {
-		// Replace app.css contents with template and new colors
-		$app_css = $path.'/app/bundles/CoreBundle/Assets/css/app.css';
+		// Replace app.css contents with template and new colors.
+		// Mautic 6+ serves pre-built assets from media/css/ that mautic:assets:generate
+		// does NOT rebuild from the bundle source, so the override must be appended to
+		// the served file directly. Older versions rebuild media/ from the bundle source.
+		if ( version_compare($version, '6.0', '>=') ) {
+			$app_css = $path.'/media/css/app.css';
+		} else {
+			$app_css = $path.'/app/bundles/CoreBundle/Assets/css/app.css';
+		}
 		$color_placeholders = array('{{logo_bg}}', '{{primary}}', '{{hover}}', '{{sidebar_bg}}', '{{sidebar_submenu_bg}}',
 		                            '{{sidebar_link}}', '{{sidebar_link_hover}}', '{{active_icon}}', '{{divider_left}}', '{{sidebar_divider}}',
 		                            '{{submenu_bullet_bg}}', '{{submenu_bullet_shadow}}');
@@ -325,8 +332,13 @@ class Whitelabeler {
 			);
 		}
 
-		// Replace libraries.css contents with template and new colors
-		$libraries_css = $path.'/app/bundles/CoreBundle/Assets/css/libraries/libraries.css';
+		// Replace libraries.css contents with template and new colors.
+		// See app.css note above: Mautic 6+ serves the pre-built file from media/css/.
+		if ( version_compare($version, '6.0', '>=') ) {
+			$libraries_css = $path.'/media/css/libraries.css';
+		} else {
+			$libraries_css = $path.'/app/bundles/CoreBundle/Assets/css/libraries/libraries.css';
+		}
 
 		if (file_exists($libraries_css)) {
 			$libraries_css_template = file_get_contents('templates/'.$version.'/app/bundles/CoreBundle/Assets/css/libraries/libraries.css');
@@ -642,6 +654,22 @@ class Whitelabeler {
 				'status' => 0,
 				'message' => $left_panel.' NOT FOUND.'
 			);
+		}
+
+		// Version 6+: the visible sidebar brand logo is rendered by
+		// Default/navbar.html.twig, not LeftPanel/index.html.twig, so replace it there too.
+		if ( version_compare($version, '6.0', '>=') ) {
+			$navbar = $path.'/app/bundles/CoreBundle/Resources/views/Default/navbar.html.twig';
+			$navbar_template_file = 'templates/'.$version.'/app/bundles/CoreBundle/Resources/views/Default/navbar.html.twig';
+			if ( file_exists($navbar) && file_exists($navbar_template_file) ) {
+				$navbar_template = file_get_contents($navbar_template_file);
+				$navbar_new = str_replace(
+					array('{{sidebar_image}}', '{{sidebar_width}}', '{{margin_top}}','{{margin_right}}', '{{margin_left}}'),
+					array($url.'/media/images/sidebar_logo.png', $sidebar_width, $sidebar_margin['top'], $sidebar_margin['right'], $sidebar_margin['left']),
+					$navbar_template
+				);
+				file_put_contents($navbar, $navbar_new);
+			}
 		}
 
 		// Update login logo and create some icons from login logo
