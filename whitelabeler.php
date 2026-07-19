@@ -276,10 +276,10 @@ class Whitelabeler {
 		$submenu_bullet_shadow
 	) {
 		// Replace app.css contents with template and new colors.
-		// Mautic 6+ serves pre-built assets from media/css/ that mautic:assets:generate
+		// Mautic 5.2+ serves pre-built assets from media/css/ that mautic:assets:generate
 		// does NOT rebuild from the bundle source, so the override must be appended to
 		// the served file directly. Older versions rebuild media/ from the bundle source.
-		if ( version_compare($version, '6.0', '>=') ) {
+		if ( version_compare($version, '5.2', '>=') ) {
 			$app_css = $path.'/media/css/app.css';
 		} else {
 			$app_css = $path.'/app/bundles/CoreBundle/Assets/css/app.css';
@@ -333,8 +333,8 @@ class Whitelabeler {
 		}
 
 		// Replace libraries.css contents with template and new colors.
-		// See app.css note above: Mautic 6+ serves the pre-built file from media/css/.
-		if ( version_compare($version, '6.0', '>=') ) {
+		// See app.css note above: Mautic 5.2+ serves the pre-built file from media/css/.
+		if ( version_compare($version, '5.2', '>=') ) {
 			$libraries_css = $path.'/media/css/libraries.css';
 		} else {
 			$libraries_css = $path.'/app/bundles/CoreBundle/Assets/css/libraries/libraries.css';
@@ -658,9 +658,9 @@ class Whitelabeler {
 			);
 		}
 
-		// Version 6+: the visible sidebar brand logo is rendered by
+		// Version 5.2+: the visible sidebar brand logo is rendered by
 		// Default/navbar.html.twig, not LeftPanel/index.html.twig, so replace it there too.
-		if ( version_compare($version, '6.0', '>=') ) {
+		if ( version_compare($version, '5.2', '>=') ) {
 			$navbar = $path.'/app/bundles/CoreBundle/Resources/views/Default/navbar.html.twig';
 			$navbar_template_file = 'templates/'.$version.'/app/bundles/CoreBundle/Resources/views/Default/navbar.html.twig';
 			if ( file_exists($navbar) && file_exists($navbar_template_file) ) {
