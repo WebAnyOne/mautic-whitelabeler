@@ -623,39 +623,41 @@ class Whitelabeler {
 		// Update sidebar logo
 		$this->imageResize(250, $sidebar_image, $media_images.'/sidebar_logo.png');
 
-		// Version 5+
-		if ( substr($version, 0, 1) >= 5 ) {
-			$left_panel = $path.'/app/bundles/CoreBundle/Resources/views/LeftPanel/index.html.twig';
-		// Below V5
-		} elseif ( substr($version, 0, 1) < 5 ) {
-			$left_panel = $path.'/app/bundles/CoreBundle/Views/LeftPanel/index.html.php';
-		}
-		
-		if (file_exists($left_panel)) {
+		// Mautic < 5.2: the sidebar brand logo is rendered by LeftPanel/index.html.twig
+		// (or the legacy .php view). For 5.2+ the visible brand moved to
+		// Default/navbar.html.twig (handled below); the LeftPanel sidebar-header brand is
+		// hidden in that UI, so overwriting it there is redundant AND triggers an
+		// authenticated-page hang on some 6.0.x releases. Only touch LeftPanel below 5.2.
+		if ( version_compare($version, '5.2', '<') ) {
 
-			// Version 5+
+			// Version 5.0/5.1
 			if ( substr($version, 0, 1) >= 5 ) {
-				$left_panel_template = file_get_contents('templates/'.$version.'/app/bundles/CoreBundle/Resources/views/LeftPanel/index.html.twig');
+				$left_panel = $path.'/app/bundles/CoreBundle/Resources/views/LeftPanel/index.html.twig';
+				$left_panel_template_file = 'templates/'.$version.'/app/bundles/CoreBundle/Resources/views/LeftPanel/index.html.twig';
 			// Below V5
-			} elseif ( substr($version, 0, 1) < 5 ) {
-				$left_panel_template = file_get_contents('templates/'.$version.'/app/bundles/CoreBundle/Views/LeftPanel/index.html.php');
+			} else {
+				$left_panel = $path.'/app/bundles/CoreBundle/Views/LeftPanel/index.html.php';
+				$left_panel_template_file = 'templates/'.$version.'/app/bundles/CoreBundle/Views/LeftPanel/index.html.php';
 			}
-		
-			$left_panel_new = str_replace(
-				// Look for these template tags.
-				array('{{sidebar_image}}', '{{sidebar_width}}', '{{margin_top}}','{{margin_right}}', '{{margin_left}}'),
-				// Replace template tags with values.
-				array($url.'/media/images/sidebar_logo.png', $sidebar_width, $sidebar_margin['top'], $sidebar_margin['right'], $sidebar_margin['left']),
-				$left_panel_template
-			);
-			$file = fopen($left_panel, "w");
-			fwrite($file, $left_panel_new);
-			fclose($file);
-		} else {
-			return array(
-				'status' => 0,
-				'message' => $left_panel.' NOT FOUND.'
-			);
+
+			if (file_exists($left_panel)) {
+				$left_panel_template = file_get_contents($left_panel_template_file);
+				$left_panel_new = str_replace(
+					// Look for these template tags.
+					array('{{sidebar_image}}', '{{sidebar_width}}', '{{margin_top}}','{{margin_right}}', '{{margin_left}}'),
+					// Replace template tags with values.
+					array($url.'/media/images/sidebar_logo.png', $sidebar_width, $sidebar_margin['top'], $sidebar_margin['right'], $sidebar_margin['left']),
+					$left_panel_template
+				);
+				$file = fopen($left_panel, "w");
+				fwrite($file, $left_panel_new);
+				fclose($file);
+			} else {
+				return array(
+					'status' => 0,
+					'message' => $left_panel.' NOT FOUND.'
+				);
+			}
 		}
 
 		// Version 5.2+: the visible sidebar brand logo is rendered by
