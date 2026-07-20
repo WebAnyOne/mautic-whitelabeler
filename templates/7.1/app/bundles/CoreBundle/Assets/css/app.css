@@ -1,0 +1,68 @@
+/* Mautic Whitelabeler Custom Color Overrides */
+.app-sidebar.sidebar-left {
+  background-color: {{sidebar_bg}} !important;
+}
+.app-sidebar.sidebar-left .sidebar-header,
+.app-sidebar.sidebar-left .sidebar-footer {
+  background-color: {{logo_bg}} !important;
+}
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li.nav-group:after {
+  left: {{divider_left}}px;
+  border-bottom: 1px solid {{sidebar_divider}};
+}
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li > a {
+  color: {{sidebar_link}} !important;
+}
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li > a:hover,
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li > a:focus {
+  background-color: {{sidebar_bg}} !important;
+  color: {{sidebar_link_hover}} !important;
+}
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li.active > a,
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li.open > a {
+  background-color: {{sidebar_bg}} !important;
+  color: {{sidebar_link_hover}} !important;
+}
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li.active > .nav-submenu,
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li.open > .nav-submenu {
+  background-color: {{sidebar_submenu_bg}} !important;
+}
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li > .nav-submenu {
+  background-color: {{sidebar_submenu_bg}} !important;
+}
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li > .nav-submenu:after {
+  background-color: {{sidebar_divider}} !important;
+}
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li > .nav-submenu > li:after {
+  background-color: {{submenu_bullet_bg}} !important;
+  box-shadow: 0 0 0 2px {{submenu_bullet_shadow}} !important;
+}
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li > .nav-submenu > li > a {
+  color: {{sidebar_link}} !important;
+}
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li > .nav-submenu > li > a:hover,
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li > .nav-submenu > li > a:focus {
+  color: {{sidebar_link_hover}} !important;
+}
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li > .nav-submenu > li.active > a,
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li > .nav-submenu > li.open > a {
+  color: {{sidebar_link}} !important;
+}
+.app-sidebar.sidebar-left .nav.sidebar-left-dark,
+.app-sidebar.sidebar-left .nav.sidebar-left-dark > li > a:hover {
+  background: {{sidebar_submenu_bg}} !important;
+}
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li.active > a:before,
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li.open > a:before {
+  background-color: {{sidebar_bg}} !important;
+}
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li > a .icon {
+  color: {{sidebar_link}} !important;
+}
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li.active .icon {
+  color: {{active_icon}} !important;
+}
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li:hover .icon,
+.app-sidebar.sidebar-left .nav-sidebar > .nav > li:focus .icon {
+  background-color: {{active_icon}} !important;
+}

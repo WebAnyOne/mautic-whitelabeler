@@ -1,0 +1,6 @@
+/* Mautic Whitelabeler Custom Color Overrides */
+:root,
+:root[theme="light"] {
+  --primary-60: {{primary}} !important;
+  --primary-70: {{hover}} !important;
+}
