@@ -1,0 +1,57 @@
+<div class="loading-bar">
+    {% trans %}mautic.core.loading{% endtrans %}
+</div>
+
+<div class="navbar-nocollapse">
+    <!-- start: left nav -->
+    <ul class="nav navbar-nav navbar-left">
+        <li class="visible-xs">
+            <a href="javascript: void(0);" data-toggle="sidebar" data-direction="ltr">
+                <i class="ri-menu-line fs-16"></i>
+            </a>
+        </li>
+        <!-- brand -->
+         <li>
+            <a class="mautic-brand" href="#" style="padding:0; text-align:center;">
+                <!-- whitelabel logo -->
+                <img src="{{sidebar_image}}" style="max-width:{{sidebar_width}}px; margin:{{margin_top}}px {{margin_right}}px 0 {{margin_left}}px;" />
+                <!--/ whitelabel logo -->
+            </a>
+            <!--/ brand -->
+         </li>
+        {% include '@MauticCore/Helper/button.html.twig' with {
+            buttons: [
+                {
+                    label: 'mautic.core.search_everything',
+                    tooltip_placement: 'right',
+                    variant: 'ghost',
+                    icon: 'ri-search-line ri-xl',
+                    icon_only: true,
+                    attributes: {
+                    'type': 'button',
+                    'data-toggle': 'modal',
+                    'data-target': '#gsearchModal',
+                    'class': 'search-button'
+                }
+                }
+            ]
+        } %}
+
+    </ul>
+    <!--/ end: left nav -->
+
+    <!-- start: right nav -->
+    <ul class="nav navbar-nav navbar-right">
+        {{ render(controller('Mautic\\CoreBundle\\Controller\\DefaultController::notificationsAction')) }}
+        {{ include('@MauticCore/Menu/quick_help.html.twig') }}
+        {{ menuRender('admin') }}
+        {{ include('@MauticCore/Menu/profile.html.twig') }}
+    </ul>
+    <div class="navbar-toolbar pull-right mt-15 mr-10">
+    {{ buttonReset(constant('Mautic\\CoreBundle\\Twig\\Helper\\ButtonHelper::LOCATION_NAVBAR')) }}
+    {{ buttonsRender() }}
+    </div>
+
+    <!--/ end: right nav -->
+</div>
+<!--/ end: navbar nocollapse -->

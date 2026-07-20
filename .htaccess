@@ -5,3 +5,29 @@
 <IfModule mod_rewrite.c>
 RewriteEngine Off
 </IfModule>
+
+# Deny direct web access to every PHP file by default so cli.php,
+# compare.php, phpinfo.php, etc. are never web-accessible.
+<FilesMatch "\.php$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Then allow web access only to the UI entry points.
+<FilesMatch "^(index|view)\.php$">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Allow from all
+    </IfModule>
+</FilesMatch>
+
+Options -Indexes
+DirectoryIndex index.php
