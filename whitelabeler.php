@@ -62,6 +62,13 @@ class Whitelabeler {
     			$url = substr($url, 0, -1);
     		}
 
+    		// This tool is always invoked on the same server as the Mautic instance
+    		// it brands, so the reachability check below has no need to wait on
+    		// public DNS propagation or a live SSL certificate for $url's hostname —
+    		// pin it to localhost so the check reflects local reachability only.
+    		$host = parse_url($url, PHP_URL_HOST);
+    		$resolve = $host ? array($host.':80:127.0.0.1', $host.':443:127.0.0.1') : array();
+
     		$curl = curl_init();
     		curl_setopt_array($curl, array(
     		    CURLOPT_URL => $url.'/favicon.ico',
@@ -70,7 +77,8 @@ class Whitelabeler {
     		    CURLOPT_NOBODY => true,
     			CURLOPT_CONNECTTIMEOUT => 5,
                 CURLOPT_SSL_VERIFYHOST => false,
-                CURLOPT_SSL_VERIFYPEER => false
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_RESOLVE => $resolve
     		));
     		$output = curl_exec($curl);
 
@@ -100,12 +108,21 @@ class Whitelabeler {
     					'message' => 'Mautic not found: '. $headers['status']
     				);
     			} else {
-    				$favicon = file_get_contents($url.'/favicon.ico', false, stream_context_create(array(
-    				    'ssl' => array(
-    				        'verify_peer' => false,
-                            'verify_peer_name' => false
-                        )
-                    )));
+    				// Same-host reachability already confirmed above — this second
+    				// request (fetching, not just HEAD-checking, the favicon body)
+    				// must use the same CURLOPT_RESOLVE override, since
+    				// file_get_contents() has no equivalent and would reintroduce
+    				// the public-DNS dependency this function exists to avoid.
+    				$favicon_curl = curl_init();
+    				curl_setopt_array($favicon_curl, array(
+    				    CURLOPT_URL => $url.'/favicon.ico',
+    				    CURLOPT_RETURNTRANSFER => true,
+    				    CURLOPT_SSL_VERIFYHOST => false,
+    				    CURLOPT_SSL_VERIFYPEER => false,
+    				    CURLOPT_RESOLVE => $resolve
+    				));
+    				$favicon = curl_exec($favicon_curl);
+    				curl_close($favicon_curl);
 
     				if ($favicon) {
     					return array(
