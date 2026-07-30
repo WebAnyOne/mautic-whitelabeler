@@ -65,9 +65,12 @@ class Whitelabeler {
     		// This tool is always invoked on the same server as the Mautic instance
     		// it brands, so the reachability check below has no need to wait on
     		// public DNS propagation or a live SSL certificate for $url's hostname —
-    		// pin it to localhost so the check reflects local reachability only.
+    		// pin it to the Plesk server's own IP (loopback isn't enough; the vhost's
+    		// TLS listener isn't bound to 127.0.0.1 on this shared-hosting setup),
+    		// mirroring the same technique already proven in this platform's own
+    		// MauticApiClient::buildHttpClient().
     		$host = parse_url($url, PHP_URL_HOST);
-    		$resolve = $host ? array($host.':80:127.0.0.1', $host.':443:127.0.0.1') : array();
+    		$resolve = $host ? array($host.':80:148.251.190.234', $host.':443:148.251.190.234') : array();
 
     		$curl = curl_init();
     		curl_setopt_array($curl, array(
